@@ -16,9 +16,9 @@ Prove the product bet before Tauri scaffolding:
 
 | Track | Artifact | Done when |
 |---|---|---|
-| A. Interaction | [`../prototype/kill-test-flow/index.html`](../prototype/kill-test-flow/index.html) | Can walk Kill-test B path in a browser without code literacy; **keyboard orchestration** (COMMAND/INSERT, Ctrl+K, `?`) feels first-class |
-| B. Corpus notes | TBD `fixtures/` | One real mixed Markdown/code sample workspace listed |
-| C. Engine | Spike checklist only | SurrealDB embed + FTS + 2-hop query named as first experiment |
+| A. Interaction | [`../prototype/kill-test-flow/index.html`](../prototype/kill-test-flow/index.html) | Can walk Kill-test B path in a browser; keyboard orchestration feels first-class — **done for toe-dip** |
+| B. Corpus | [`../fixtures/sample-project/`](../fixtures/sample-project/) | Mixed Markdown/code fixture + Threads listed — **scaffolded** |
+| C. Engine | [`ENGINE-SPIKE.md`](ENGINE-SPIKE.md) | Surreal embed + FTS + 2-hop checklist named — **checklist ready**; code spike next |
 
 ## Out of scope for the toe-dip
 
@@ -31,8 +31,8 @@ Prove the product bet before Tauri scaffolding:
 - **A:** Cold resume + pack + act preference vs manual reconstruction  
 - **B:** ≥3 Threads, recoverable switches, ≤30s / ≤2 clicks from Home  
 
-## Next after toe-dip
+## Next
 
-1. Critique prototype with Alex-persona walkthrough (shame, flow, pack trust).  
-2. Add Weave Peek panel to the prototype (FR-11 love path).  
-3. Stand up Rust/Surreal spike repo folder when UI path feels right.
+1. Walk fixture Threads in the prototype (optional: point prototype data at fixture titles).  
+2. Stand up `spikes/knowledge-index/` Rust crate and run [ENGINE-SPIKE.md](ENGINE-SPIKE.md) checks.  
+3. Write ADR 0001 go/no-go when checks land.
