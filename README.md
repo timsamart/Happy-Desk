@@ -9,8 +9,10 @@ Happy Desk opens an ordinary folder as a living workbench. Files stay yours. Thr
 - [Product brief](docs/PRODUCT-BRIEF.md)
 - [Initial PRD](docs/PRD.md)
 - [Knowledge Loom UX concept](docs/UX-CONCEPT-KNOWLEDGE-LOOM.md)
-- [Grill decisions (D1–D20)](docs/GRILL-DECISIONS.md)
+- [Grill decisions (D1–D21)](docs/GRILL-DECISIONS.md)
 - [Knowledge engine evaluation](docs/KNOWLEDGE-ENGINE.md)
+- [Phase 0 spike](docs/PHASE-0.md)
 - [Design system](design-system/happy-desk/MASTER.md)
+- [Kill-test UI prototype](prototype/kill-test-flow/index.html) — open in a browser
 
-The project is in product discovery. The filesystem remains the source of truth; indexes are derived and rebuildable. v1 validates Thread resume → Context Pack → native agent — not an OS replacement.
+The project is in product discovery / **Phase 0**. The filesystem remains the source of truth; indexes are derived and rebuildable. v1 validates Thread resume → Context Pack → native agent — not an OS replacement.

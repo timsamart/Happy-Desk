@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Happy Desk — Kill-test flow (Phase 0)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app" id="app">
+    <header class="topbar">
+      <div class="brand">Happy Desk <span class="proto">Phase 0 prototype</span></div>
+      <div class="top-actions">
+        <button type="button" class="btn ghost" data-action="capture" title="Capture (≤2s)">Capture</button>
+        <button type="button" class="btn ghost" data-goto="home">Home</button>
+      </div>
+    </header>
+
+    <div class="pulse" id="pulse">
+      Knowledge Pulse · exact search ready · semantic 42% · graph candidates growing · 0 blocking
+    </div>
+
+    <!-- HOME -->
+    <section class="view" id="view-home" hidden>
+      <aside class="rail">
+        <h2>Workspace</h2>
+        <p class="muted path">H:/repos/sample-project</p>
+        <ul class="nav-list">
+          <li class="active">Threads</li>
+          <li class="muted">Files</li>
+          <li class="muted">Open loops inbox (4)</li>
+        </ul>
+      </aside>
+      <main class="main">
+        <header class="main-head">
+          <h1>Home</h1>
+          <p class="lede">Active + recent only. Full mess stays one click away.</p>
+        </header>
+        <div class="needs" id="needs-you">Needs you · Agent left 2 claims on <strong>Engine spike</strong></div>
+        <h3 class="section-label">Active</h3>
+        <ul class="thread-list" id="active-threads"></ul>
+        <h3 class="section-label">Recently touched</h3>
+        <ul class="thread-list" id="recent-threads"></ul>
+        <button type="button" class="linkish" id="show-all">Show all open loops</button>
+        <p class="hint" id="all-loops" hidden>Inbox: rewrite README tone · check BSL · ask Chrys about Weave copy · park “logo sketches”</p>
+      </main>
+    </section>
+
+    <!-- WORKSPACE: editor + right rail -->
+    <section class="view workspace" id="view-work" hidden>
+      <aside class="rail">
+        <button type="button" class="linkish back" data-goto="home">← Threads</button>
+        <h2 id="thread-title">Thread</h2>
+        <p class="muted" id="thread-meta"></p>
+        <ul class="nav-list">
+          <li class="active">Source</li>
+          <li class="muted">Structure</li>
+          <li class="muted">Neighborhood</li>
+        </ul>
+        <div class="shelf">
+          <button type="button" class="btn ghost small" data-action="capture">Capture</button>
+          <button type="button" class="btn ghost small" data-action="weave">Weave</button>
+          <button type="button" class="btn primary small" data-goto="pack">Act</button>
+        </div>
+      </aside>
+      <main class="main editor-pane">
+        <div class="away" id="while-away" hidden></div>
+        <div class="editor" id="editor">
+          <div class="gutter" aria-hidden="true"></div>
+          <article contenteditable="true" spellcheck="false" id="editor-body"></article>
+        </div>
+        <div class="weave-dock" id="weave-dock" hidden>
+          <header>
+            <strong>Weave</strong>
+            <span class="muted">focus: current paragraph</span>
+            <button type="button" class="icon-btn" data-action="close-weave" aria-label="Close Weave">Esc</button>
+          </header>
+          <div class="weave-cols">
+            <div>
+              <h4>Woven · connected now</h4>
+              <ul id="woven-list"></ul>
+            </div>
+            <div>
+              <h4>Likely · may connect</h4>
+              <ul id="likely-list"></ul>
+            </div>
+          </div>
+        </div>
+      </main>
+      <aside class="lens" id="lens">
+        <div class="tabs">
+          <button type="button" class="tab" data-tab="why">Why</button>
+          <button type="button" class="tab" data-tab="weave">Weave</button>
+          <button type="button" class="tab active" data-tab="pack">Pack</button>
+        </div>
+        <div class="tab-panel" id="panel-why" hidden>
+          <p class="muted">Select a pack candidate to see score components and path.</p>
+          <div id="why-body"></div>
+        </div>
+        <div class="tab-panel" id="panel-weave" hidden>
+          <p class="muted">Same bands as the dock — invoke from Build Shelf or here.</p>
+          <button type="button" class="btn ghost small" data-action="weave">Open Weave peek</button>
+        </div>
+        <div class="tab-panel" id="panel-pack">
+          <div class="budget">Budget <strong>6 / 12</strong> items · ~3.2k tokens</div>
+          <ul class="pack-list" id="pack-list"></ul>
+          <div class="lens-actions">
+            <button type="button" class="btn primary" data-goto="review">Freeze pack &amp; run (stub)</button>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <!-- REVIEW -->
+    <section class="view" id="view-review" hidden>
+      <aside class="rail">
+        <button type="button" class="linkish back" data-goto="work">← Thread</button>
+        <h2>Review</h2>
+        <p class="muted">File diff primary · knowledge selective</p>
+      </aside>
+      <main class="main review-grid">
+        <section>
+          <h3>Files</h3>
+          <pre class="diff">+ src/index.rs
++ .happy-desk/objects/decision-embedded-index.md
+  M docs/architecture.md</pre>
+          <label class="check"><input type="checkbox" checked /> Accept file changes</label>
+        </section>
+        <section>
+          <h3>Knowledge <span class="badge">high-impact</span></h3>
+          <ul class="kdiff">
+            <li><strong>New Decision</strong> use embedded index — <em>proposed</em>
+              <div class="row-actions">
+                <button type="button" class="btn ghost small">Accept</button>
+                <button type="button" class="btn ghost small">Keep proposed</button>
+              </div>
+            </li>
+            <li class="collapsed">N low-confidence proposals — ignore / review queue</li>
+          </ul>
+          <p class="hint">Accepting files does not launder inferences into packs.</p>
+        </section>
+        <footer class="review-foot">
+          <button type="button" class="btn ghost" data-goto="home">Back to Home (switch Thread)</button>
+          <button type="button" class="btn primary" data-goto="work">Resume this Thread</button>
+        </footer>
+      </main>
+    </section>
+
+    <div class="toast" id="toast" hidden></div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
