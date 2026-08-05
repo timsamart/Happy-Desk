@@ -16,7 +16,7 @@ Prove the product bet before Tauri scaffolding:
 
 | Track | Artifact | Done when |
 |---|---|---|
-| A. Interaction | [`../prototype/kill-test-flow/index.html`](../prototype/kill-test-flow/index.html) | Can walk Kill-test B path in a browser without code literacy |
+| A. Interaction | [`../prototype/kill-test-flow/index.html`](../prototype/kill-test-flow/index.html) | Can walk Kill-test B path in a browser without code literacy; **keyboard orchestration** (COMMAND/INSERT, Ctrl+K, `?`) feels first-class |
 | B. Corpus notes | TBD `fixtures/` | One real mixed Markdown/code sample workspace listed |
 | C. Engine | Spike checklist only | SurrealDB embed + FTS + 2-hop query named as first experiment |
 

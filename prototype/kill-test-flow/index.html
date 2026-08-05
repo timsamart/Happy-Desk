@@ -10,16 +10,27 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <a class="skip-link" href="#main-focus">Skip to main</a>
   <div class="app" id="app">
     <header class="topbar">
-      <div class="brand">Happy Desk <span class="proto">Phase 0 prototype</span></div>
+      <div class="brand">Happy Desk <span class="proto">Phase 0 · keyboard-first</span></div>
       <div class="top-actions">
-        <button type="button" class="btn ghost" data-action="capture" title="Capture (≤2s)">Capture</button>
-        <button type="button" class="btn ghost" data-goto="home">Home</button>
+        <button type="button" class="btn ghost" data-action="palette" title="Command palette (Ctrl+K)">
+          Command <kbd>Ctrl+K</kbd>
+        </button>
+        <button type="button" class="btn ghost" data-action="capture" title="Capture (C)">
+          Capture <kbd>C</kbd>
+        </button>
+        <button type="button" class="btn ghost" data-goto="home" title="Home (G H)">
+          Home <kbd>G H</kbd>
+        </button>
+        <button type="button" class="btn ghost" data-action="help" title="Keyboard help (?)">
+          <kbd>?</kbd>
+        </button>
       </div>
     </header>
 
-    <div class="pulse" id="pulse">
+    <div class="pulse" id="pulse" role="status">
       Knowledge Pulse · exact search ready · semantic 42% · graph candidates growing · 0 blocking
     </div>
 
@@ -33,26 +44,27 @@
           <li class="muted">Files</li>
           <li class="muted">Open loops inbox (4)</li>
         </ul>
+        <p class="kbd-hint">Select with <kbd>J</kbd>/<kbd>K</kbd> · open <kbd>Enter</kbd></p>
       </aside>
-      <main class="main">
+      <main class="main" id="main-focus" tabindex="-1">
         <header class="main-head">
           <h1>Home</h1>
-          <p class="lede">Active + recent only. Full mess stays one click away.</p>
+          <p class="lede">Active + recent only. Full mess stays one click away. Console mode is on — type to orchestrate.</p>
         </header>
         <div class="needs" id="needs-you">Needs you · Agent left 2 claims on <strong>Engine spike</strong></div>
         <h3 class="section-label">Active</h3>
-        <ul class="thread-list" id="active-threads"></ul>
+        <ul class="thread-list" id="active-threads" role="listbox" aria-label="Active threads"></ul>
         <h3 class="section-label">Recently touched</h3>
-        <ul class="thread-list" id="recent-threads"></ul>
-        <button type="button" class="linkish" id="show-all">Show all open loops</button>
+        <ul class="thread-list" id="recent-threads" role="listbox" aria-label="Recent threads"></ul>
+        <button type="button" class="linkish" id="show-all" title="O">Show all open loops <kbd>O</kbd></button>
         <p class="hint" id="all-loops" hidden>Inbox: rewrite README tone · check BSL · ask Chrys about Weave copy · park “logo sketches”</p>
       </main>
     </section>
 
-    <!-- WORKSPACE: editor + right rail -->
+    <!-- WORKSPACE -->
     <section class="view workspace" id="view-work" hidden>
       <aside class="rail">
-        <button type="button" class="linkish back" data-goto="home">← Threads</button>
+        <button type="button" class="linkish back" data-goto="home" title="G H">← Threads <kbd>G H</kbd></button>
         <h2 id="thread-title">Thread</h2>
         <p class="muted" id="thread-meta"></p>
         <ul class="nav-list">
@@ -61,18 +73,19 @@
           <li class="muted">Neighborhood</li>
         </ul>
         <div class="shelf">
-          <button type="button" class="btn ghost small" data-action="capture">Capture</button>
-          <button type="button" class="btn ghost small" data-action="weave">Weave</button>
-          <button type="button" class="btn primary small" data-goto="pack">Act</button>
+          <button type="button" class="btn ghost small" data-action="capture" title="C">Capture <kbd>C</kbd></button>
+          <button type="button" class="btn ghost small" data-action="weave" title="W">Weave <kbd>W</kbd></button>
+          <button type="button" class="btn primary small" data-goto="pack" title="A">Act <kbd>A</kbd></button>
         </div>
+        <p class="kbd-hint"><kbd>I</kbd> insert · <kbd>Esc</kbd> command · <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> tabs</p>
       </aside>
       <main class="main editor-pane">
         <div class="away" id="while-away" hidden></div>
         <div class="editor" id="editor">
           <div class="gutter" aria-hidden="true"></div>
-          <article contenteditable="true" spellcheck="false" id="editor-body"></article>
+          <article contenteditable="true" spellcheck="false" id="editor-body" aria-label="Source editor"></article>
         </div>
-        <div class="weave-dock" id="weave-dock" hidden>
+        <div class="weave-dock" id="weave-dock" hidden role="region" aria-label="Weave peek">
           <header>
             <strong>Weave</strong>
             <span class="muted">focus: current paragraph</span>
@@ -91,24 +104,26 @@
         </div>
       </main>
       <aside class="lens" id="lens">
-        <div class="tabs">
-          <button type="button" class="tab" data-tab="why">Why</button>
-          <button type="button" class="tab" data-tab="weave">Weave</button>
-          <button type="button" class="tab active" data-tab="pack">Pack</button>
+        <div class="tabs" role="tablist">
+          <button type="button" class="tab" role="tab" data-tab="why" title="1">Why <kbd>1</kbd></button>
+          <button type="button" class="tab" role="tab" data-tab="weave" title="2">Weave <kbd>2</kbd></button>
+          <button type="button" class="tab active" role="tab" data-tab="pack" title="3">Pack <kbd>3</kbd></button>
         </div>
-        <div class="tab-panel" id="panel-why" hidden>
-          <p class="muted">Select a pack candidate to see score components and path.</p>
+        <div class="tab-panel" id="panel-why" hidden role="tabpanel">
+          <p class="muted">Select a pack candidate (<kbd>J</kbd>/<kbd>K</kbd> in Pack) to see score components.</p>
           <div id="why-body"></div>
         </div>
-        <div class="tab-panel" id="panel-weave" hidden>
-          <p class="muted">Same bands as the dock — invoke from Build Shelf or here.</p>
-          <button type="button" class="btn ghost small" data-action="weave">Open Weave peek</button>
+        <div class="tab-panel" id="panel-weave" hidden role="tabpanel">
+          <p class="muted">Same bands as the dock.</p>
+          <button type="button" class="btn ghost small" data-action="weave">Open Weave peek <kbd>W</kbd></button>
         </div>
-        <div class="tab-panel" id="panel-pack">
+        <div class="tab-panel" id="panel-pack" role="tabpanel">
           <div class="budget">Budget <strong>6 / 12</strong> items · ~3.2k tokens</div>
-          <ul class="pack-list" id="pack-list"></ul>
+          <ul class="pack-list" id="pack-list" role="listbox" aria-label="Pack candidates"></ul>
           <div class="lens-actions">
-            <button type="button" class="btn primary" data-goto="review">Freeze pack &amp; run (stub)</button>
+            <button type="button" class="btn primary" data-goto="review" title="Ctrl+Enter">
+              Freeze pack &amp; run <kbd>Ctrl+Enter</kbd>
+            </button>
           </div>
         </div>
       </aside>
@@ -117,9 +132,10 @@
     <!-- REVIEW -->
     <section class="view" id="view-review" hidden>
       <aside class="rail">
-        <button type="button" class="linkish back" data-goto="work">← Thread</button>
+        <button type="button" class="linkish back" data-goto="work" title="Esc">← Thread <kbd>Esc</kbd></button>
         <h2>Review</h2>
         <p class="muted">File diff primary · knowledge selective</p>
+        <p class="kbd-hint"><kbd>G H</kbd> Home · <kbd>R</kbd> resume Thread</p>
       </aside>
       <main class="main review-grid">
         <section>
@@ -127,15 +143,15 @@
           <pre class="diff">+ src/index.rs
 + .happy-desk/objects/decision-embedded-index.md
   M docs/architecture.md</pre>
-          <label class="check"><input type="checkbox" checked /> Accept file changes</label>
+          <label class="check"><input type="checkbox" checked id="accept-files" /> Accept file changes</label>
         </section>
         <section>
           <h3>Knowledge <span class="badge">high-impact</span></h3>
           <ul class="kdiff">
             <li><strong>New Decision</strong> use embedded index — <em>proposed</em>
               <div class="row-actions">
-                <button type="button" class="btn ghost small">Accept</button>
-                <button type="button" class="btn ghost small">Keep proposed</button>
+                <button type="button" class="btn ghost small" data-action="accept-knowledge">Accept <kbd>Y</kbd></button>
+                <button type="button" class="btn ghost small" data-action="keep-proposed">Keep proposed <kbd>N</kbd></button>
               </div>
             </li>
             <li class="collapsed">N low-confidence proposals — ignore / review queue</li>
@@ -143,14 +159,86 @@
           <p class="hint">Accepting files does not launder inferences into packs.</p>
         </section>
         <footer class="review-foot">
-          <button type="button" class="btn ghost" data-goto="home">Back to Home (switch Thread)</button>
-          <button type="button" class="btn primary" data-goto="work">Resume this Thread</button>
+          <button type="button" class="btn ghost" data-goto="home">Home <kbd>G H</kbd></button>
+          <button type="button" class="btn primary" data-goto="work">Resume Thread <kbd>R</kbd></button>
         </footer>
       </main>
     </section>
 
-    <div class="toast" id="toast" hidden></div>
+    <footer class="statusline" id="statusline" aria-live="polite">
+      <span class="mode" id="status-mode">COMMAND</span>
+      <span class="chord" id="status-chord"></span>
+      <span class="hints" id="status-hints"></span>
+      <span class="view-name" id="status-view">home</span>
+    </footer>
+
+    <div class="toast" id="toast" hidden role="status"></div>
   </div>
+
+  <!-- Command palette -->
+  <div class="overlay" id="palette" hidden>
+    <div class="palette" role="dialog" aria-modal="true" aria-label="Command palette">
+      <div class="palette-head">
+        <span class="muted">Command</span>
+        <kbd>Ctrl+K</kbd>
+      </div>
+      <input type="text" id="palette-input" placeholder="Type a command…" autocomplete="off" spellcheck="false" />
+      <ul id="palette-list" role="listbox"></ul>
+      <p class="palette-foot muted"><kbd>↑↓</kbd> move · <kbd>Enter</kbd> run · <kbd>Esc</kbd> close</p>
+    </div>
+  </div>
+
+  <!-- Help -->
+  <div class="overlay" id="help" hidden>
+    <div class="help-card" role="dialog" aria-modal="true" aria-labelledby="help-title">
+      <header>
+        <h2 id="help-title">Keyboard orchestration</h2>
+        <button type="button" class="icon-btn" data-action="close-help" aria-label="Close help">Esc</button>
+      </header>
+      <p class="lede">Two modes, console-style: <strong>COMMAND</strong> orchestrates the desk; <strong>INSERT</strong> writes in Source. <kbd>Esc</kbd> leaves insert; <kbd>I</kbd> enters it.</p>
+      <div class="help-grid">
+        <section>
+          <h3>Global</h3>
+          <dl>
+            <div><dt><kbd>Ctrl+K</kbd></dt><dd>Command palette</dd></div>
+            <div><dt><kbd>?</kbd></dt><dd>This help</dd></div>
+            <div><dt><kbd>G</kbd> then <kbd>H</kbd></dt><dd>Go Home</dd></div>
+            <div><dt><kbd>C</kbd></dt><dd>Capture → Open Loop</dd></div>
+            <div><dt><kbd>Esc</kbd></dt><dd>Close overlay / Weave / leave insert</dd></div>
+          </dl>
+        </section>
+        <section>
+          <h3>Home</h3>
+          <dl>
+            <div><dt><kbd>J</kbd> / <kbd>K</kbd></dt><dd>Next / previous Thread</dd></div>
+            <div><dt><kbd>Enter</kbd></dt><dd>Resume Thread</dd></div>
+            <div><dt><kbd>1</kbd>–<kbd>4</kbd></dt><dd>Jump to Thread by index</dd></div>
+            <div><dt><kbd>O</kbd></dt><dd>Toggle all open loops</dd></div>
+          </dl>
+        </section>
+        <section>
+          <h3>Thread / Source</h3>
+          <dl>
+            <div><dt><kbd>I</kbd></dt><dd>Insert (edit)</dd></div>
+            <div><dt><kbd>W</kbd></dt><dd>Weave peek</dd></div>
+            <div><dt><kbd>A</kbd> or <kbd>3</kbd></dt><dd>Act / Pack tab</dd></div>
+            <div><dt><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></dt><dd>Why / Weave / Pack</dd></div>
+            <div><dt><kbd>J</kbd> <kbd>K</kbd></dt><dd>Pack candidates (in Pack)</dd></div>
+            <div><dt><kbd>Ctrl+Enter</kbd></dt><dd>Freeze pack &amp; run</dd></div>
+          </dl>
+        </section>
+        <section>
+          <h3>Review</h3>
+          <dl>
+            <div><dt><kbd>Y</kbd> / <kbd>N</kbd></dt><dd>Accept / keep knowledge proposed</dd></div>
+            <div><dt><kbd>R</kbd></dt><dd>Resume this Thread</dd></div>
+            <div><dt><kbd>G H</kbd></dt><dd>Home (switch Thread)</dd></div>
+          </dl>
+        </section>
+      </div>
+    </div>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>
