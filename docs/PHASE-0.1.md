@@ -54,4 +54,4 @@ Root cause of empty SEARCH: Surreal allows **one field per FTS index**; the v0 s
 
 ## Next (after exit)
 
-Scaffold Tauri shell — **Phase 1** start — Phase 0.1 is green.
+Phase 0.1 is green → [PHASE-1.md](PHASE-1.md) (Tauri shell + Home toe-dip in [`desktop/`](../desktop/)).

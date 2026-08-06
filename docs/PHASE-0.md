@@ -34,4 +34,4 @@ Prove the product bet before Tauri scaffolding:
 ## Next
 
 Phase 0.1 complete — see [PHASE-0.1.md](PHASE-0.1.md).  
-**Next increment:** scaffold Tauri shell (**Phase 1** start).
+**Current product increment:** [PHASE-1.md](PHASE-1.md) — Tauri shell + Home toe-dip ([`desktop/`](../desktop/)).

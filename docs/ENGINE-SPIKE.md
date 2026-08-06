@@ -41,4 +41,4 @@ Phase 0.1 engine harden is done. Remaining later work:
 
 - Optional RocksDB bake on CI Linux.  
 - Vector/HNSW — explicitly out of this spike.  
-- Product next: Tauri shell (**Phase 1**).
+- Product next: [PHASE-1.md](PHASE-1.md) — Tauri shell + Home ([`desktop/`](../desktop/)).
