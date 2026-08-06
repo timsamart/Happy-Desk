@@ -1,0 +1,20 @@
+[package]
+name = "knowledge-index"
+version = "0.1.0"
+edition = "2021"
+description = "Phase 0 Happy Desk KnowledgeIndex spike (SurrealDB embed)"
+publish = false
+
+[dependencies]
+anyhow = "1"
+regex = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+surrealdb = { version = "2.2", default-features = false, features = ["kv-mem", "kv-surrealkv"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "fs"] }
+walkdir = "2"
+
+[profile.dev]
+# Keep spike compiles tolerable while pulling Surreal.
+opt-level = 0

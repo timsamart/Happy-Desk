@@ -18,11 +18,11 @@ Prove the product bet before Tauri scaffolding:
 |---|---|---|
 | A. Interaction | [`../prototype/kill-test-flow/index.html`](../prototype/kill-test-flow/index.html) | Can walk Kill-test B path in a browser; keyboard orchestration feels first-class — **done for toe-dip** |
 | B. Corpus | [`../fixtures/sample-project/`](../fixtures/sample-project/) | Mixed Markdown/code fixture + Threads listed — **scaffolded** |
-| C. Engine | [`ENGINE-SPIKE.md`](ENGINE-SPIKE.md) | Surreal embed + FTS + 2-hop checklist named — **checklist ready**; code spike next |
+| C. Engine | [`ENGINE-SPIKE.md`](ENGINE-SPIKE.md) · [`../spikes/knowledge-index`](../spikes/knowledge-index) | Surreal embed + ingest + retrieval + 2-hop + rebuild — **PASS** · [ADR 0001](adr/0001-knowledge-index-engine.md) |
 
 ## Out of scope for the toe-dip
 
-- Real indexing, embeddings, or CLI harnesses  
+- Real embeddings bake-off or CLI harnesses  
 - Atlas, Time Rail, Weave whisper ticks  
 - Full desktop shell  
 
@@ -33,6 +33,6 @@ Prove the product bet before Tauri scaffolding:
 
 ## Next
 
-1. Walk fixture Threads in the prototype (optional: point prototype data at fixture titles).  
-2. Stand up `spikes/knowledge-index/` Rust crate and run [ENGINE-SPIKE.md](ENGINE-SPIKE.md) checks.  
-3. Write ADR 0001 go/no-go when checks land.
+1. Optional: point kill-test prototype data at fixture titles.  
+2. Harden spike FTS (BM25 without contains fallback) + incremental ingest.  
+3. When UI + engine stay green: scaffold Tauri shell (Phase 1 start).

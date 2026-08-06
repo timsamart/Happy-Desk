@@ -12,7 +12,8 @@ Happy Desk opens an ordinary folder as a living workbench. Files stay yours. Thr
 - [Grill decisions (D1–D21)](docs/GRILL-DECISIONS.md)
 - [Knowledge engine evaluation](docs/KNOWLEDGE-ENGINE.md)
 - [Phase 0 spike](docs/PHASE-0.md)
-- [Engine spike checklist](docs/ENGINE-SPIKE.md)
+- [Engine spike checklist](docs/ENGINE-SPIKE.md) · [ADR 0001](docs/adr/0001-knowledge-index-engine.md)
+- [Knowledge-index spike crate](spikes/knowledge-index/) — `cargo run --release`
 - [Design system](design-system/happy-desk/MASTER.md)
 - [Kill-test UI prototype](prototype/kill-test-flow/index.html) — open in a browser (`?` for keys)
 - [Sample fixture workspace](fixtures/sample-project/)
