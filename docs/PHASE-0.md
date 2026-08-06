@@ -1,6 +1,6 @@
 # Phase 0 — Product & engine spike
 
-**Status:** In progress  
+**Status:** Phase 0.1 complete — ready for Phase 1 when desired  
 **Started:** 2026-08-05  
 **Authority:** [PRD.md](PRD.md) §11 Phase 0 · [GRILL-DECISIONS.md](GRILL-DECISIONS.md)
 
@@ -33,6 +33,5 @@ Prove the product bet before Tauri scaffolding:
 
 ## Next
 
-1. Optional: point kill-test prototype data at fixture titles.  
-2. Harden spike FTS (BM25 without contains fallback) + incremental ingest.  
-3. When UI + engine stay green: scaffold Tauri shell (Phase 1 start).
+Phase 0.1 complete — see [PHASE-0.1.md](PHASE-0.1.md).  
+**Next increment:** scaffold Tauri shell (**Phase 1** start).

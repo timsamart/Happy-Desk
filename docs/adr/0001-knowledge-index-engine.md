@@ -19,7 +19,7 @@ Happy Desk needs one embedded derived engine for metadata, graph edges, FTS, and
 |---|---|
 | Embed without daemon | **PASS** — SurrealKV on disk |
 | Ingest fixture | **PASS** — 8 files → 11 nodes, 11 edges, 2 work objects |
-| Retrieve `embedded index` | **PASS** — `docs/architecture.md` in top hits (contains fallback; SEARCH index defined) |
+| Retrieve `embedded index` | **PASS** — `docs/architecture.md` in top hits (**BM25**; Phase 0.1 removed contains fallback) |
 | 2-hop from decision | **PASS** — architecture + related docs/folders/open loop |
 | Rebuild authored objects | **PASS** — decision present after wipe+reingest |
 
@@ -33,8 +33,8 @@ SurrealDB core is under **Business Source License 1.1**. Happy Desk’s intended
 
 ## Consequences
 
-- Next engineering: harden FTS (ensure BM25 SEARCH hits without contains fallback), incremental watcher ingest, then vector spike.  
-- Do not wire Tauri until Kill-test UI path + this engine path both stay green.  
+- Next engineering: ~~harden FTS (BM25 without contains fallback), incremental watcher ingest~~ → **done in Phase 0.1**; next is vector spike / Phase 1 Tauri.  
+- Do not wire Tauri until Kill-test UI path + this engine path both stay green — both green as of Phase 0.1.  
 - If Surreal packaging or BSL blocks distribution, pivot ADR to SQLite+FTS5 or LadybugDB using the same trait.
 
 ## Alternatives considered

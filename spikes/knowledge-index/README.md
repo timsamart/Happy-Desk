@@ -1,6 +1,6 @@
 # KnowledgeIndex spike
 
-Phase 0 SurrealDB embed experiment for Happy Desk.
+Phase 0 / 0.1 SurrealDB embed experiment for Happy Desk.
 
 ## Run
 
@@ -15,12 +15,13 @@ Uses corpus [`fixtures/sample-project`](../../fixtures/sample-project). Writes l
 
 1. Embed via **SurrealKV** (no external daemon; Windows-friendly vs RocksDB)  
 2. Ingest files → nodes + structural/authored edges  
-3. FTS / contains retrieval for `embedded index`  
-4. 2-hop neighborhood from decision object  
-5. Rebuild preserves authored `.happy-desk` objects  
+3. **BM25 FTS** for `embedded index` (separate title/body SEARCH indexes; no contains fallback)  
+4. **Incremental hash-skip** on second ingest of an unchanged workspace  
+5. 2-hop neighborhood from decision object  
+6. Rebuild preserves authored `.happy-desk` objects  
 
 ## Notes
 
 - Thin `KnowledgeIndex` trait sketched in `src/main.rs`.  
-- SEARCH/BM25 is defined; spike currently accepts contains fallback if SEARCH returns empty — still proves retrieval wiring.  
-- See [docs/adr/0001-knowledge-index-engine.md](../../docs/adr/0001-knowledge-index-engine.md).
+- Surreal FTS allows one field per SEARCH index — title and body are indexed separately.  
+- See [docs/PHASE-0.1.md](../../docs/PHASE-0.1.md) · [docs/adr/0001-knowledge-index-engine.md](../../docs/adr/0001-knowledge-index-engine.md).

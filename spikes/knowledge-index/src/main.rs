@@ -1,6 +1,6 @@
-//! Phase 0 KnowledgeIndex spike against `fixtures/sample-project`.
+//! Phase 0.1 KnowledgeIndex spike against `fixtures/sample-project`.
 //!
-//! Checks: embed (SurrealKV on disk) → ingest → FTS → 2-hop → rebuild.
+//! Checks: embed → ingest → BM25 FTS (no contains) → incremental hash-skip → 2-hop → rebuild.
 
 use anyhow::{bail, Context, Result};
 use regex::Regex;
@@ -58,6 +58,10 @@ struct IngestStats {
     nodes: usize,
     edges: usize,
     objects: usize,
+    /// File/folder nodes whose content_hash matched an existing record (skipped upsert).
+    skipped: usize,
+    /// File/folder nodes created or updated this pass.
+    upserted: usize,
 }
 
 struct SurrealIndex {
@@ -88,6 +92,8 @@ impl SurrealIndex {
     }
 
     async fn migrate(&self) -> Result<()> {
+        // Surreal FTS: one SEARCH index per field. A combined title+body index
+        // silently fails to match; Phase 0.1 splits them.
         self.db
             .query(
                 r#"
@@ -95,7 +101,8 @@ impl SurrealIndex {
                 DEFINE INDEX IF NOT EXISTS node_nid ON node FIELDS nid UNIQUE;
                 DEFINE INDEX IF NOT EXISTS node_uri ON node FIELDS uri;
                 DEFINE ANALYZER IF NOT EXISTS spike_analyzer TOKENIZERS blank, class FILTERS lowercase, snowball(english);
-                DEFINE INDEX IF NOT EXISTS node_fts ON node FIELDS title, body SEARCH ANALYZER spike_analyzer BM25;
+                DEFINE INDEX IF NOT EXISTS node_title_fts ON node FIELDS title SEARCH ANALYZER spike_analyzer BM25;
+                DEFINE INDEX IF NOT EXISTS node_body_fts ON node FIELDS body SEARCH ANALYZER spike_analyzer BM25;
 
                 DEFINE TABLE IF NOT EXISTS edge SCHEMALESS;
                 DEFINE INDEX IF NOT EXISTS edge_eid ON edge FIELDS eid UNIQUE;
@@ -106,6 +113,18 @@ impl SurrealIndex {
             .await
             .context("migrate")?;
         Ok(())
+    }
+
+    async fn get_node_by_uri(&self, uri: &str) -> Result<Option<Node>> {
+        let mut response = self
+            .db
+            .query(
+                "SELECT nid, kind, subtype, uri, title, body, content_hash FROM node WHERE uri = $uri LIMIT 1;",
+            )
+            .bind(("uri", uri.to_string()))
+            .await?;
+        let rows: Vec<Node> = response.take(0).unwrap_or_default();
+        Ok(rows.into_iter().next())
     }
 }
 
@@ -131,13 +150,16 @@ impl KnowledgeIndex for SurrealIndex {
     }
 
     async fn search_fts(&self, q: &str, limit: usize) -> Result<Vec<Hit>> {
+        // No contains fallback — Phase 0.1 requires BM25 SEARCH hits.
         let mut response = self
             .db
             .query(
                 r#"
-                SELECT nid, uri, title, search::score(1) AS score FROM node
-                WHERE title @1@ $q OR body @1@ $q
-                ORDER BY score DESC
+                SELECT nid, uri, title,
+                       search::score(0) AS title_score,
+                       search::score(1) AS body_score
+                FROM node
+                WHERE title @0@ $q OR body @1@ $q
                 LIMIT $limit;
                 "#,
             )
@@ -151,51 +173,26 @@ impl KnowledgeIndex for SurrealIndex {
             nid: String,
             uri: String,
             title: String,
-            score: Option<f32>,
+            title_score: Option<f32>,
+            body_score: Option<f32>,
         }
 
-        let rows: Vec<Row> = response.take(0).unwrap_or_default();
-        if !rows.is_empty() {
-            return Ok(rows
-                .into_iter()
-                .map(|r| Hit {
+        let mut rows: Vec<Row> = response.take(0).unwrap_or_default();
+        rows.sort_by(|a, b| {
+            let sa = a.title_score.unwrap_or(0.0) + a.body_score.unwrap_or(0.0);
+            let sb = b.title_score.unwrap_or(0.0) + b.body_score.unwrap_or(0.0);
+            sb.partial_cmp(&sa).unwrap_or(std::cmp::Ordering::Equal)
+        });
+        Ok(rows
+            .into_iter()
+            .map(|r| {
+                let score = r.title_score.unwrap_or(0.0) + r.body_score.unwrap_or(0.0);
+                Hit {
                     nid: r.nid,
                     uri: r.uri,
                     title: r.title,
-                    score_hint: format!("{:.4}", r.score.unwrap_or(0.0)),
-                })
-                .collect());
-        }
-
-        let mut response = self
-            .db
-            .query(
-                r#"
-                SELECT nid, uri, title FROM node
-                WHERE string::lowercase(title) CONTAINS string::lowercase($q)
-                   OR string::lowercase(body) CONTAINS string::lowercase($q)
-                LIMIT $limit;
-                "#,
-            )
-            .bind(("q", q.to_string()))
-            .bind(("limit", limit as i64))
-            .await
-            .context("search_fts_fallback")?;
-
-        #[derive(Deserialize)]
-        struct Row2 {
-            nid: String,
-            uri: String,
-            title: String,
-        }
-        let rows: Vec<Row2> = response.take(0).unwrap_or_default();
-        Ok(rows
-            .into_iter()
-            .map(|r| Hit {
-                nid: r.nid,
-                uri: r.uri,
-                title: r.title,
-                score_hint: "contains".into(),
+                    score_hint: format!("{:.4}", score),
+                }
             })
             .collect())
     }
@@ -305,10 +302,29 @@ fn parse_object_front(body: &str) -> HashMap<String, String> {
     map
 }
 
+async fn upsert_node_if_changed(
+    index: &SurrealIndex,
+    node: &Node,
+    stats: &mut IngestStats,
+) -> Result<bool> {
+    if let Some(existing) = index.get_node_by_uri(&node.uri).await? {
+        if existing.content_hash == node.content_hash {
+            stats.skipped += 1;
+            return Ok(false);
+        }
+    }
+    index.upsert_node(node).await?;
+    stats.upserted += 1;
+    stats.nodes += 1;
+    Ok(true)
+}
+
 async fn ingest_workspace(index: &SurrealIndex, root: &Path) -> Result<IngestStats> {
     let mut stats = IngestStats::default();
     let mut uri_to_id: HashMap<String, String> = HashMap::new();
     let mut pending_links: Vec<(String, String)> = Vec::new();
+    // Files whose body changed (or are new) — refresh derived edges for these only.
+    let mut dirty_files: HashSet<String> = HashSet::new();
 
     let skip = |p: &Path| {
         let s = p.to_string_lossy().replace('\\', "/");
@@ -373,10 +389,12 @@ async fn ingest_workspace(index: &SurrealIndex, root: &Path) -> Result<IngestSta
             body: body.clone(),
             content_hash: content_hash(&bytes),
         };
-        index.upsert_node(&node).await?;
+        let changed = upsert_node_if_changed(index, &node, &mut stats).await?;
         uri_to_id.insert(uri.clone(), id.clone());
         stats.files += 1;
-        stats.nodes += 1;
+        if changed {
+            dirty_files.insert(uri.clone());
+        }
 
         if ext == "md" {
             for target in parse_md_links(&body) {
@@ -398,29 +416,33 @@ async fn ingest_workspace(index: &SurrealIndex, root: &Path) -> Result<IngestSta
                         body: String::new(),
                         content_hash: content_hash(puri.as_bytes()),
                     };
-                    index.upsert_node(&folder).await?;
+                    let _ = upsert_node_if_changed(index, &folder, &mut stats).await?;
                     uri_to_id.insert(puri.clone(), pid);
-                    stats.nodes += 1;
                 }
-                let eid = slug_id("edge", &format!("contains:{puri}->{uri}"));
-                let edge = Edge {
-                    eid: eid,
-                    from_id: uri_to_id[&puri].clone(),
-                    to_id: id.clone(),
-                    kind: "contains".into(),
-                    source: "structural".into(),
-                    strength: 1.0,
-                    confidence: 1.0,
-                    review_state: "accepted".into(),
-                };
-                index.upsert_edge(&edge).await?;
-                stats.edges += 1;
+                if changed {
+                    let eid = slug_id("edge", &format!("contains:{puri}->{uri}"));
+                    let edge = Edge {
+                        eid,
+                        from_id: uri_to_id[&puri].clone(),
+                        to_id: id.clone(),
+                        kind: "contains".into(),
+                        source: "structural".into(),
+                        strength: 1.0,
+                        confidence: 1.0,
+                        review_state: "accepted".into(),
+                    };
+                    index.upsert_edge(&edge).await?;
+                    stats.edges += 1;
+                }
             }
         }
     }
 
-    // Pass 2: markdown links → links_to
+    // Pass 2: markdown links → links_to (only for dirty sources)
     for (from_uri, raw_target) in pending_links {
+        if !dirty_files.contains(&from_uri) {
+            continue;
+        }
         let target = raw_target.split('#').next().unwrap_or(&raw_target);
         let resolved = resolve_link(&from_uri, target);
         let Some(to_id) = uri_to_id.get(&resolved).cloned().or_else(|| {
@@ -436,7 +458,7 @@ async fn ingest_workspace(index: &SurrealIndex, root: &Path) -> Result<IngestSta
         let from_id = uri_to_id[&from_uri].clone();
         let eid = slug_id("edge", &format!("links_to:{from_uri}->{resolved}"));
         let edge = Edge {
-            eid: eid,
+            eid,
             from_id,
             to_id,
             kind: "links_to".into(),
@@ -449,10 +471,10 @@ async fn ingest_workspace(index: &SurrealIndex, root: &Path) -> Result<IngestSta
         stats.edges += 1;
     }
 
-    // Pass 3: work-object anchors → anchored_in
+    // Pass 3: work-object anchors → anchored_in (dirty objects only)
     let object_uris: Vec<(String, String)> = uri_to_id
         .iter()
-        .filter(|(uri, _)| uri.contains(".happy-desk/objects/"))
+        .filter(|(uri, _)| uri.contains(".happy-desk/objects/") && dirty_files.contains(*uri))
         .map(|(u, i)| (u.clone(), i.clone()))
         .collect();
 
@@ -478,7 +500,7 @@ async fn ingest_workspace(index: &SurrealIndex, root: &Path) -> Result<IngestSta
             if let Some(to_id) = uri_to_id.get(&a) {
                 let eid = slug_id("edge", &format!("anchored_in:{uri}->{a}"));
                 let edge = Edge {
-                    eid: eid,
+                    eid,
                     from_id: id.clone(),
                     to_id: to_id.clone(),
                     kind: "anchored_in".into(),
@@ -558,21 +580,23 @@ async fn run_checks(workspace: &Path, db_path: &Path) -> Result<Vec<CheckResult>
     let stats = ingest_workspace(&embed, workspace).await?;
     results.push(CheckResult {
         name: "ingest",
-        pass: stats.nodes > 0 && stats.objects >= 2,
+        pass: stats.nodes > 0 && stats.objects >= 2 && stats.upserted > 0,
         detail: format!(
-            "files={} nodes={} edges={} objects={}",
-            stats.files, stats.nodes, stats.edges, stats.objects
+            "files={} upserted={} skipped={} edges={} objects={}",
+            stats.files, stats.upserted, stats.skipped, stats.edges, stats.objects
         ),
     });
 
-    // 3) FTS
+    // 3) FTS via BM25 (no contains fallback)
     let hits = embed.search_fts("embedded index", 5).await?;
-    let fts_pass = hits.iter().any(|h| h.uri.contains("architecture.md"));
+    let fts_has_arch = hits.iter().any(|h| h.uri.contains("architecture.md"));
+    let fts_all_bm25 = !hits.is_empty()
+        && hits.iter().all(|h| h.score_hint != "contains" && h.score_hint.parse::<f32>().is_ok());
     results.push(CheckResult {
-        name: "fts_embedded_index",
-        pass: fts_pass,
+        name: "fts_bm25_no_fallback",
+        pass: fts_has_arch && fts_all_bm25,
         detail: if hits.is_empty() {
-            "no hits".into()
+            "no BM25 hits".into()
         } else {
             hits.iter()
                 .map(|h| format!("{} ({})", h.uri, h.score_hint))
@@ -581,7 +605,18 @@ async fn run_checks(workspace: &Path, db_path: &Path) -> Result<Vec<CheckResult>
         },
     });
 
-    // 4) 2-hop from decision object
+    // 4) Incremental ingest — unchanged corpus should hash-skip
+    let stats2 = ingest_workspace(&embed, workspace).await?;
+    results.push(CheckResult {
+        name: "incremental_hash_skip",
+        pass: stats2.skipped > 0 && stats2.upserted == 0 && stats2.edges == 0,
+        detail: format!(
+            "files={} upserted={} skipped={} edges={}",
+            stats2.files, stats2.upserted, stats2.skipped, stats2.edges
+        ),
+    });
+
+    // 5) 2-hop from decision object
     let decision_id = slug_id(
         "file",
         ".happy-desk/objects/decision-embedded-index.md",
@@ -621,7 +656,7 @@ async fn run_checks(workspace: &Path, db_path: &Path) -> Result<Vec<CheckResult>
             .join(" | "),
     });
 
-    // 5) Rebuild
+    // 6) Rebuild
     let _ = embed.rebuild_from_workspace(workspace).await?;
     let after = embed
         .db

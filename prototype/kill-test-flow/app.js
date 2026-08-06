@@ -14,7 +14,7 @@ const threads = [
     id: "loom",
     title: "Loom UX copy",
     group: "active",
-    meta: "Anchor · docs/UX-CONCEPT… · yesterday",
+    meta: "Anchor · docs/loom-notes.md · yesterday",
     needsYou: false,
     away: "",
     body: `<p>Signature interaction is <strong>Thread Resume</strong>. Weave is second chair — composition-time foresight, not the home screen.</p>
@@ -24,16 +24,16 @@ const threads = [
     id: "pack",
     title: "Context Pack contract",
     group: "active",
-    meta: "Anchor · .happy-desk/contexts · 3d ago",
+    meta: "Anchor · docs/context-pack.md · 3d ago",
     needsYou: false,
     away: "",
     body: `<p>Packs must be inspectable: pins, exclusions, budget, hashes. Ranked list alone must be enough to Act.</p>`,
   },
   {
     id: "readme",
-    title: "README tone pass",
+    title: "README tone",
     group: "recent",
-    meta: "Parked · 5d ago",
+    meta: "Parked · README.md · 5d ago",
     needsYou: false,
     away: "",
     body: `<p>Continuity workspace framing — not “another AI chat.”</p>`,
@@ -94,6 +94,7 @@ const commands = [
   { id: "resume-1", label: "Resume: Engine spike", keys: "1", run: () => resumeThread("engine") },
   { id: "resume-2", label: "Resume: Loom UX copy", keys: "2", run: () => resumeThread("loom") },
   { id: "resume-3", label: "Resume: Context Pack contract", keys: "3", run: () => resumeThread("pack") },
+  { id: "resume-4", label: "Resume: README tone", keys: "4", run: () => resumeThread("readme") },
   { id: "review-home", label: "Review → Home (switch)", keys: "G H", run: () => goHome() },
 ];
 
